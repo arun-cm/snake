@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
+
+    </style>
 </head>
 
 <body>
@@ -17,179 +19,111 @@
         cnv = document.getElementById("gameCanv");
         cntx = cnv.getContext("2d");
 
-
         // step count
-        var xStep = 0, yStep = -20;
-
-        var snakeBody = [{ x: 200, y: 200 }, { x: 200, y: 180 }, { x: 200, y: 160 }];
+        const STEP = 20;
+        var xStep = 20, yStep = 20;
+        var snakeBody = [];
 
         // snake body box size.
         var snakeBox = 18;
 
-        // canvas width 
-        var canvasHeight = cnv.height;
-
-        var driection;
+        // initial position of snake 
+        var lastX = 200;
+        var lastY = 200;
 
         // add arrow key event
         document.addEventListener("keydown", keyDown);
+
         function keyDown(e) {
             switch (e.keyCode) {
-
                 //left
-                case 37: yStep = 0; xStep = -20; canvasHeight = 400; driection='left';
+                case 37: yStep = STEP * 0; xStep = STEP * -1;
                     break;
                 //up
-                case 38: yStep = -20; xStep = 0; canvasHeight = 400; driection='up';
+                case 38: yStep = STEP * -1; xStep = STEP * 0;
                     break;
                 //right
-                case 39: yStep = 0; xStep = 20; canvasHeight = 0; driection='right';
+                case 39: yStep = STEP * 0; xStep = STEP * 1;
                     break;
                 //down
-                case 40: yStep = 20; xStep = 0; canvasHeight = 0; driection='down';
+                case 40: yStep = STEP * 1; xStep = STEP * 0;
                     break;
             }
         }
+
         // run game.
         setInterval(runSnake, 1000 / 5);
 
-
-        var foodX = Math.floor(Math.random() * 20) * 20;
-        var foodY= Math.floor(Math.random() * 20) * 20;
-
+        var foodX = Math.floor(Math.random() * 20);
+        var foodY = Math.floor(Math.random() * 20);
         function makeFood() {
-
             // snake food.
             cntx.fillStyle = "yellow";
-            //cntx.arc(300, 300, 10, 2 * Math.PI,false)
-            //cntx.fill();
-            cntx.fillRect(foodX, foodY, snakeBox, snakeBox); // left top width height.
+            cntx.fillRect(foodX * 20, foodY * 20, 18, 18); // left top width height.
         }
-
 
         function runSnake() {
 
-            // remove first block of snake body.
-            snakeBody.shift();
-
             // canvas background color.
             cntx.fillStyle = "black";
-            cntx.fillRect(0, 0, 400, 400);
+            cntx.fillRect(0, 0, cnv.width, cnv.height);
 
-            // snake food.
-            //makeFood();
+            // creare snake food
+            makeFood();
 
-            // snake body.
+            // remove head/top from snake body inorder to show like its moving
+            if (snakeBody.length > 1) {
+                snakeBody.shift();
+            }
+
+            // calculate new position of X and Y.
+            if (xStep == 20 && yStep == 20) {
+
+                // initially set snake head and tail in center.
+                lastX = 200;
+                lastY = 200;
+            } else {
+
+                // get head/top position current snake body :  x
+                lastX = snakeBody[snakeBody.length - 1].x;
+                // get head/top position current snake body :  y
+                lastY = snakeBody[snakeBody.length - 1].y;
+
+                // add or sutract value from lastX and lastY
+                // either one should be 0 always
+                lastX = lastX + xStep;
+                lastY = lastY + yStep;
+
+                // if lastY is at end of canvas set lastY value appropriately.
+                lastY = lastY >= 400 ? 0 : lastY;
+                lastY = lastY == -20 ? 380 : lastY;
+
+                // if lastX is at end of canvas set lastX value appropriately.
+                lastX = lastX >= 400 ? 0 : lastX;
+                lastX = lastX == -20 ? 380 : lastX;
+
+            }
+
+            // add new block at last position of snake body.
+            snakeBody.push({ x: lastX, y: lastY });
+
+            // Eat food
+            if ((foodX * STEP) == snakeBody[snakeBody.length - 1].x && (foodY * STEP) == snakeBody[snakeBody.length - 1].y) {
+                snakeBody.push({ x: (foodX * STEP), y: (foodY * STEP) });
+
+                // create new food positions
+                foodX = Math.floor(Math.random() * 20);
+                foodY = Math.floor(Math.random() * 20);
+            }
+
+            // create full snake body using the array.
             cntx.fillStyle = "red";
             for (var k = 0; k < snakeBody.length; k++) {
                 cntx.fillRect(snakeBody[k].x, snakeBody[k].y, snakeBox, snakeBox);
             }
 
-            // calculate new position of X and Y.
-            var lastX = snakeBody[snakeBody.length - 1].x;
-            var lastY = snakeBody[snakeBody.length - 1].y;
-
-            var currentX = ((lastX + xStep) == 0 || (lastX + xStep) == 400) ? canvasHeight : lastX + xStep;
-            var currentY = ((lastY + yStep) == 0 || (lastY + yStep) == 400) ? canvasHeight : lastY + yStep;
-
-            // add new block to last position of snake body.
-            snakeBody.push(
-                {
-                    x: currentX,
-                    y: currentY
-                }
-            )
-
-
-            if ((snakeBody[0].x == foodX) && (snakeBody[0].y == foodY )) {
-                var tempX = snakeBody[snakeBody.length - 1].x;
-                var tempY = snakeBody[snakeBody.length - 1].y + snakeBox;
-                snakeBody.push({
-                    x: tempX,
-                    y: tempY
-                })
-
-                foodX = Math.floor(Math.random() * 20) * 20;
-                foodY = Math.floor(Math.random() * 20) * 20;
-                makeFood();
-
-            }
-            else {
-                makeFood();
-            }
-
-
         }
-/*
 
-
-        window.onload = function () {
-            canv = document.getElementById("gc");
-            ctx = canv.getContext("2d");
-            document.addEventListener("keydown", keyPush);
-            setInterval(game, 1000 / 5);
-        }
-        px = py = 10;
-        gs = tc = 20;
-        ax = ay = 15;
-        xv = yv = 0;
-        trail = [];
-        tail = 5;
-        function game() {
-            px += xv;
-            py += yv;
-            if (px < 0) {
-                px = tc - 1;
-            }
-            if (px > tc - 1) {
-                px = 0;
-            }
-            if (py < 0) {
-                py = tc - 1;
-            }
-            if (py > tc - 1) {
-                py = 0;
-            }
-            ctx.fillStyle = "black";
-            ctx.fillRect(0, 0, canv.width, canv.height);
-
-            ctx.fillStyle = "lime";
-            for (var i = 0; i < trail.length; i++) {
-                ctx.fillRect(trail[i].x * gs, trail[i].y * gs, gs - 2, gs - 2);
-                if (trail[i].x == px && trail[i].y == py) {
-                    tail = 5;
-                }
-            }
-            trail.push({ x: px, y: py });
-            while (trail.length > tail) {
-                trail.shift();
-            }
-
-            if (ax == px && ay == py) {
-                tail++;
-                ax = Math.floor(Math.random() * tc);
-                ay = Math.floor(Math.random() * tc);
-            }
-            ctx.fillStyle = "red";
-            ctx.fillRect(ax * gs, ay * gs, gs - 2, gs - 2);
-        }
-        function keyPush(evt) {
-            switch (evt.keyCode) {
-                case 37:
-                    xv = -1; yv = 0;
-                    break;
-                case 38:
-                    xv = 0; yv = -1;
-                    break;
-                case 39:
-                    xv = 1; yv = 0;
-                    break;
-                case 40:
-                    xv = 0; yv = 1;
-                    break;
-            }
-        }
-        */
     </script>
 </body>
 
